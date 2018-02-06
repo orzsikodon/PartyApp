@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1053645343025",
+    "firebase_url": "https://partyappfox.firebaseio.com",
+    "project_id": "partyappfox",
+    "storage_bucket": "partyappfox.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053645343025:android:8ba42493c96e0b8e",
+        "android_client_info": {
+          "package_name": "com.example.android.partyappfox"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1053645343025-32gsc4iqaa6jeu5l2fsrn1ert12p0mh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7Z69TW1DHukrVS6Y25C741opFvpTmzYM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
