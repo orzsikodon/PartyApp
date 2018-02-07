@@ -1,5 +1,6 @@
 package com.example.android.partyappfox;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,9 +13,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import com.google.firebase.auth.FirebaseAuth;
+
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +29,15 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        // auth object initialization
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -57,8 +64,14 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        //log out the user
+        if (id == R.id.action_logout) {
+            Toast.makeText(this, "Signing out", Toast.LENGTH_SHORT).show();
+            mAuth.signOut();
+            Intent logOut = new Intent(this, SignInActivity.class);
+            startActivity(logOut);
+            // kill the current activity
+            finish();
             return true;
         }
 
