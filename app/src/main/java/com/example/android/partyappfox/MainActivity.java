@@ -1,5 +1,8 @@
 package com.example.android.partyappfox;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -38,6 +41,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // auth object initialization
         mAuth = FirebaseAuth.getInstance();
+
+        // set up the initial fragment
+        Fragment fragment = Fragment.instantiate(this, InterestFragment.class.getName());
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.grid_frag_container, fragment);
+        ft.commit();
+
     }
 
     @Override
@@ -83,23 +93,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        chooseFragment(id);
+        return true;
+    }
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+    // choose the appropriate fragments
+    public void chooseFragment(int id) {
+        Fragment mFrag = null;
 
-        } else if (id == R.id.nav_slideshow) {
+        // switch on the id
+        switch (id) {
+            // choose the Interest Fragment
+            case R.id.interest_option:
+                mFrag = new InterestFragment();
+                break;
 
-        } else if (id == R.id.nav_manage) {
+            // choose the map fragment
+            case R.id.map_option:
+                mFrag = new MapFragment();
+                break;
 
-        } else if (id == R.id.nav_share) {
+            // choose the fragment showing events happening near you
+            case R.id.around_me_option:
+                mFrag = new EventsFragment();
+                break;
 
-        } else if (id == R.id.nav_send) {
+            // choose the fragment that allows you to create events
+            case R.id.create_event_option:
+                mFrag = new CreateEventFragment();
+                break;
+        }
 
+        if (mFrag != null) {
+            // do the transaction!
+            FragmentManager mFragmentManager = getFragmentManager();
+            FragmentTransaction mTransaction = mFragmentManager.beginTransaction();
+            mTransaction.replace(R.id.grid_frag_container, mFrag);
+            mTransaction.commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 }
