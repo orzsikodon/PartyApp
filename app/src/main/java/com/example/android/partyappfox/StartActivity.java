@@ -2,8 +2,11 @@ package com.example.android.partyappfox;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;

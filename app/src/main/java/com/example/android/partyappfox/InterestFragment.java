@@ -3,9 +3,13 @@ package com.example.android.partyappfox;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +20,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +36,9 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
     private static final String PRIMARY_INTEREST_KEY = "primaryInterestLocalKey";
     private static final String SECONDARY_INTEREST_KEY = "secondaryInterestLocalKey";
     private static final String NAME_KEY = "nameLocalKey";
+    private static final String LATITUDE_KEY = "latKey";
+    private static final String LONGITUDE_KEY = "longKey";
+
 
     private Spinner mPrimarySpinner;
     private Spinner mSecondarySpinner;
@@ -46,11 +55,22 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
 
-    // database reference
+    // database references
     private DatabaseReference mDbRef;
+    private DatabaseReference mGeoFireRef;
+
+    // geofire object
+    private GeoFire mGeoFire;
 
     // user Id
     private String mCurrentUserId;
+
+    // location manager
+    private LocationManager mLocManager;
+
+    // location longitude and latitude
+    private Double mLat;
+    private Double mLon;
 
 
     public InterestFragment() {
@@ -71,8 +91,13 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         // current user id
         mCurrentUserId = mFirebaseUser.getUid();
 
-        // db reference
+        // db references
         mDbRef = FirebaseDatabase.getInstance().getReference("/users" + "/" + mCurrentUserId);
+        mGeoFireRef = FirebaseDatabase.getInstance().getReference("/geofire");
+        mGeoFire = new GeoFire(mGeoFireRef);
+
+        // the location manager from which we will call the location updates
+        mLocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
     }
 
@@ -220,6 +245,62 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
 
     }
 
+    // return the best last location
+    private Location getLastKnownLocation() {
+        List<String> providers = mLocManager.getProviders(true);
+        Location bestLocation = null;
+
+        /* check for permission
+        this will always evaluate to true, because the app can't start if the user doesn't allow location
+        during sign up */
+        if ((ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            Toast.makeText(mContext, "Location was already enabled", Toast.LENGTH_SHORT).show();
+        }
+
+        for (String provider : providers) {
+            Location loc = mLocManager.getLastKnownLocation(provider);
+            if (loc == null) {
+                continue;
+            }
+            if (bestLocation == null || loc.getAccuracy() < bestLocation.getAccuracy()) {
+                bestLocation = loc;
+            }
+        }
+        return bestLocation;
+    }
+
+    // when the update button is clicked save the last known location of the user
+    private void updateLocationCloud(){
+
+        // update the location
+        try{
+            final Location location = getLastKnownLocation();
+
+            if (location != null) {
+                mLat = location.getLatitude();
+                mLon = location.getLongitude();
+            } else {
+                Toast.makeText(mContext, "Location is null", Toast.LENGTH_SHORT).show();
+            }
+            // do the saving in the cloud
+            if (mLat != null && mLon != null) {
+                mGeoFire.setLocation(mCurrentUserId, new GeoLocation(mLat,mLon));
+
+                // do the saving locally in shared prefs
+                SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putFloat(LATITUDE_KEY, mLat.floatValue());
+                editor.putFloat(LONGITUDE_KEY, mLon.floatValue());
+                editor.commit();
+
+            }
+        }
+        catch (SecurityException e){
+
+        }
+
+    }
+
     private void update(){
 
         if (!validateInput()){
@@ -231,7 +312,9 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
 
         // update in the cloud
         updateCloud();
-    }
 
+        // update the location in the cloud
+        updateLocationCloud();
+    }
 
 }

@@ -1,8 +1,10 @@
 package com.example.android.partyappfox;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -24,6 +26,9 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     private ProgressBar mProgBar;
     private FirebaseAuth mAuth;
 
+    private final int LOCATION_PERMISSIONS_REQUEST = 111;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +46,11 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
         // auth object initialization
         mAuth = FirebaseAuth.getInstance();
+
+        // ask for permissions as soon as the app starts
+        if ((ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(this, new String[] {android.Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSIONS_REQUEST);
+        }
     }
 
     /*
@@ -150,4 +160,23 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case LOCATION_PERMISSIONS_REQUEST:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // restart everything
+                    Toast.makeText(this, "Location services enabled", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    // Permission Denied
+                    Toast.makeText(this, "Please enable location services", Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }    }
 }
