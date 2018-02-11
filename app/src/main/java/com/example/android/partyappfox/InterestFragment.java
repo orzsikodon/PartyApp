@@ -24,6 +24,7 @@ import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -92,8 +93,9 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         mCurrentUserId = mFirebaseUser.getUid();
 
         // db references
-        mDbRef = FirebaseDatabase.getInstance().getReference("/users" + "/" + mCurrentUserId);
-        mGeoFireRef = FirebaseDatabase.getInstance().getReference("/geofire");
+        //mDbRef = FirebaseDatabase.getInstance().getReference("/users" + "/" + mCurrentUserId);
+        mDbRef = FirebaseDatabase.getInstance().getReference("/geofire/" + mCurrentUserId + "/data");
+        mGeoFireRef = FirebaseDatabase.getInstance().getReference("/geofire/");
         mGeoFire = new GeoFire(mGeoFireRef);
 
         // the location manager from which we will call the location updates
@@ -242,6 +244,7 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         name.setValue(mEditName.getText().toString());
         interest1.setValue(mPrimaryInterest);
         interest2.setValue(mSecondaryInterest);
+        
 
     }
 
@@ -284,21 +287,31 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
             }
             // do the saving in the cloud
             if (mLat != null && mLon != null) {
-                mGeoFire.setLocation(mCurrentUserId, new GeoLocation(mLat,mLon));
+                mGeoFire.setLocation(mCurrentUserId, new GeoLocation(mLat, mLon), new GeoFire.CompletionListener() {
+                    @Override
+                    public void onComplete(String key, DatabaseError error) {
 
-                // do the saving locally in shared prefs
-                SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putFloat(LATITUDE_KEY, mLat.floatValue());
-                editor.putFloat(LONGITUDE_KEY, mLon.floatValue());
-                editor.commit();
+                        // do the saving locally in shared prefs
+                        SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putFloat(LATITUDE_KEY, mLat.floatValue());
+                        editor.putFloat(LONGITUDE_KEY, mLon.floatValue());
+                        editor.commit();
+
+                        Toast.makeText(mContext, "Update successful!", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
 
             }
+
+            // do the updates here
+            updateLocally();
+            updateCloud();
         }
         catch (SecurityException e){
 
         }
-
     }
 
     private void update(){
@@ -306,12 +319,6 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         if (!validateInput()){
             return;
         }
-
-        // update shared prefs
-        updateLocally();
-
-        // update in the cloud
-        updateCloud();
 
         // update the location in the cloud
         updateLocationCloud();
