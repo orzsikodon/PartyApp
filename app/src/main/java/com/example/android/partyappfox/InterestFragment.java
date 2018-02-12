@@ -24,12 +24,16 @@ import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class InterestFragment extends Fragment implements View.OnClickListener{
@@ -93,9 +97,8 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         mCurrentUserId = mFirebaseUser.getUid();
 
         // db references
-        //mDbRef = FirebaseDatabase.getInstance().getReference("/users" + "/" + mCurrentUserId);
-        mDbRef = FirebaseDatabase.getInstance().getReference("/geofire/" + mCurrentUserId + "/data");
-        mGeoFireRef = FirebaseDatabase.getInstance().getReference("/geofire/");
+        mDbRef = FirebaseDatabase.getInstance().getReference().child("geofire").child(mCurrentUserId).child("data");
+        mGeoFireRef = FirebaseDatabase.getInstance().getReference().child("geofire");
         mGeoFire = new GeoFire(mGeoFireRef);
 
         // the location manager from which we will call the location updates
@@ -124,38 +127,8 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // populate the spinners and set the listeners
-        ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(mContext, R.array.activities_array, android.R.layout.simple_spinner_item);
-        adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mPrimarySpinner.setAdapter(adapter1);
-        mPrimarySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
-                // save the selection
-                mPrimaryInterest = parent.getItemAtPosition(pos).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(mContext, R.array.activities_array, android.R.layout.simple_spinner_item);
-        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSecondarySpinner.setAdapter(adapter2);
-        mSecondarySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
-                // save the selection
-                mSecondaryInterest = parent.getItemAtPosition(pos).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
+        // set the spinners
+        populateSpinners();
 
         // initialize the values if already saved before
         setAlreadySavedValues();
@@ -244,8 +217,6 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         name.setValue(mEditName.getText().toString());
         interest1.setValue(mPrimaryInterest);
         interest2.setValue(mSecondaryInterest);
-        
-
     }
 
     // return the best last location
@@ -298,20 +269,57 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
                         editor.putFloat(LONGITUDE_KEY, mLon.floatValue());
                         editor.commit();
 
+                        // do the updates here
+                        updateLocally();
+                        updateCloud();
+
                         Toast.makeText(mContext, "Update successful!", Toast.LENGTH_SHORT).show();
 
                     }
                 });
 
             }
-
-            // do the updates here
-            updateLocally();
-            updateCloud();
         }
         catch (SecurityException e){
 
         }
+    }
+
+    // populate spinners
+    private void populateSpinners(){
+        // populate the spinners and set the listeners
+        ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(mContext, R.array.activities_array, android.R.layout.simple_spinner_item);
+        adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mPrimarySpinner.setAdapter(adapter1);
+        mPrimarySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
+                // save the selection
+                mPrimaryInterest = parent.getItemAtPosition(pos).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(mContext, R.array.activities_array, android.R.layout.simple_spinner_item);
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSecondarySpinner.setAdapter(adapter2);
+        mSecondarySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
+                // save the selection
+                mSecondaryInterest = parent.getItemAtPosition(pos).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
     }
 
     private void update(){
