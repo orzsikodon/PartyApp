@@ -48,7 +48,7 @@ import java.util.List;
 
 public class CreateEventFragment extends Fragment implements View.OnClickListener {
 
-    private final double QUERY_RADIUS = 2.0;
+    private final double QUERY_RADIUS = 1.5;
     private static final String LATITUDE_KEY = "latKey";
     private static final String LONGITUDE_KEY = "longKey";
     private static final String EVENT_DATA_KEY = "eventData";
@@ -458,7 +458,7 @@ public class CreateEventFragment extends Fragment implements View.OnClickListene
                 createEventDataCloud(mEventKey);
 
                 // add it to the user
-                addEventToUserDB(mEventKey);
+                // addEventToUserDB(mEventKey);
 
                 Toast.makeText(mContext, "Event Created!", Toast.LENGTH_LONG).show();
 

@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 
 
 public class EventsFragment extends Fragment {
-    private final double QUERY_RADIUS = 2.0;
+    private final double QUERY_RADIUS = 1.5;
     private static final String LATITUDE_KEY = "latKey";
     private static final String LONGITUDE_KEY = "longKey";
     private static final String NAME_KEY = "nameLocalKey";
@@ -59,7 +60,9 @@ public class EventsFragment extends Fragment {
     public GeoQuery mGeoQuery;
 
     // a list for the adapter holding all the queried events
+    // and distance
     private ArrayList<DataSnapshot> mDataEventList;
+    private ArrayList<Double> mDistanceList;
 
     // user fields from shared prefs
     private double mCurrentLat;
@@ -100,8 +103,9 @@ public class EventsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // initialize an empty array list
+        // initialize the empty array lists
         mDataEventList = new ArrayList<>();
+        mDistanceList = new ArrayList<>();
 
         // get the lat and long of the users location and name from shared prefs
         SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
@@ -141,8 +145,7 @@ public class EventsFragment extends Fragment {
 
                     // add the event snapshot that's in the vicinity to the list
                     mDataEventList.add(dataSnapshot);
-                    Log.d("SNAPSHOT", "DOWN");
-
+                    mDistanceList.add(mCalculateDistance(mCurrentLat, mCurrentLon, location));
                 }
 
                 @Override
@@ -164,7 +167,7 @@ public class EventsFragment extends Fragment {
                 public void onGeoQueryReady() {
 
                     // populate the list view
-                    populateListView(mDataEventList);
+                    populateListView(mDataEventList, mDistanceList);
                 }
 
                 @Override
@@ -191,14 +194,14 @@ public class EventsFragment extends Fragment {
     }
 
     // populate the custom array adapter for the list view
-    private void populateListView(final ArrayList<DataSnapshot> eventList){
+    private void populateListView(final ArrayList<DataSnapshot> eventList, final ArrayList<Double> distanceList){
         if (eventList.size() > 0){
             // dismiss the dialog, loading finished
             if (mDialog != null){
                 mDialog.dismiss();
             }
             // set the adapter
-            customEventAdapter = new CustomEventAdapter(mContext, eventList, mCurrentLat, mCurrentLon);
+            customEventAdapter = new CustomEventAdapter(mContext, eventList, distanceList);
             mListView.setAdapter(customEventAdapter);
 
             // set the on click listener
@@ -217,6 +220,27 @@ public class EventsFragment extends Fragment {
                 mDialog.dismiss();
             }
         }
+    }
+
+    // method that calculates each event's location from the user in meters
+    private double mCalculateDistance(double currentLat, double currentLon, GeoLocation eventLocation){
+
+        double dist;
+
+        Location currentLoc = new Location("");
+        currentLoc.setLatitude(currentLat);
+        currentLoc.setLongitude(currentLon);
+
+        Location eventLoc = new Location("");
+        eventLoc.setLatitude(eventLocation.latitude);
+        eventLoc.setLongitude(eventLocation.longitude);
+
+        dist = currentLoc.distanceTo(eventLoc);
+
+        // round it to 2 decimal places
+        double rounded = Math.round(dist * 100.0) / 100.0;
+
+        return rounded;
     }
 
     @Override
