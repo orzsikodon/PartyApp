@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ public class EventsFragment extends Fragment {
     private static final String LATITUDE_KEY = "latKey";
     private static final String LONGITUDE_KEY = "longKey";
     private static final String NAME_KEY = "nameLocalKey";
+    private static final String EVENT_INTENT_KEY = "eventIntentKey";
 
     // context and view and adapter
     private Context mContext;
@@ -88,6 +90,16 @@ public class EventsFragment extends Fragment {
         // db and query geofire query
         mGeoFireRef = FirebaseDatabase.getInstance().getReference().child("geofireEvents");
         mGeoFire = new GeoFire(mGeoFireRef);
+
+        // initialize the empty array lists
+        mDataEventList = new ArrayList<>();
+        mDistanceList = new ArrayList<>();
+
+        // get the lat and long of the users location and name from shared prefs
+        SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
+        mCurrentLat = Double.valueOf(sharedPref.getFloat(LATITUDE_KEY, 666));
+        mCurrentLon = Double.valueOf(sharedPref.getFloat(LONGITUDE_KEY, 666));
+        mCurrentName = sharedPref.getString(NAME_KEY, "");
     }
 
     @Override
@@ -102,16 +114,11 @@ public class EventsFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
 
-        // initialize the empty array lists
-        mDataEventList = new ArrayList<>();
-        mDistanceList = new ArrayList<>();
-
-        // get the lat and long of the users location and name from shared prefs
-        SharedPreferences sharedPref = mContext.getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
-        mCurrentLat = Double.valueOf(sharedPref.getFloat(LATITUDE_KEY, 666));
-        mCurrentLon = Double.valueOf(sharedPref.getFloat(LONGITUDE_KEY, 666));
-        mCurrentName = sharedPref.getString(NAME_KEY, "");
+    @Override
+    public void onResume() {
+        super.onResume();
 
         // load the data
         loadQueriedEvents();
@@ -209,7 +216,10 @@ public class EventsFragment extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                     String eventID = eventList.get(position).getKey();
-                    Toast.makeText(mContext, "Event ID: " + eventID, Toast.LENGTH_LONG).show();
+                    // fire the send picture intent
+                    Intent mIntent = new Intent(getActivity(), EventDetailActivity.class);
+                    mIntent.putExtra(EVENT_INTENT_KEY, eventID);
+                    startActivity(mIntent);
                 }
             });
         }else {

@@ -34,6 +34,14 @@
             android:name=".SignInActivity"
             android:label="@string/title_activity_sign_in"
             android:screenOrientation="portrait">
+
+        </activity>
+        <activity
+            android:name=".EventDetailActivity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.android.partyappfox.MainActivity" />
         </activity>
     </application>
 
