@@ -92,8 +92,6 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         // set up firebase
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
-        // current user id
         mCurrentUserId = mFirebaseUser.getUid();
 
         // db references
@@ -111,14 +109,7 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_interest, container, false);
 
-        // get access to the UI fields
-        mPrimarySpinner = mView.findViewById(R.id.primary_spinner);
-        mSecondarySpinner = mView.findViewById(R.id.secondary_spinner);
-        mEditName = mView.findViewById(R.id.name_edit_text);
-        mUpdateButton = mView.findViewById(R.id.update_interest_button);
-
-        // set the on click listener for the button
-        mUpdateButton.setOnClickListener(this);
+        initializeWidgets(mView);
 
         return mView;
     }
@@ -283,6 +274,18 @@ public class InterestFragment extends Fragment implements View.OnClickListener{
         catch (SecurityException e){
 
         }
+    }
+
+    // get the widgets
+    private void initializeWidgets(View mView){
+        // get access to the UI fields
+        mPrimarySpinner = mView.findViewById(R.id.primary_spinner);
+        mSecondarySpinner = mView.findViewById(R.id.secondary_spinner);
+        mEditName = mView.findViewById(R.id.name_edit_text);
+        mUpdateButton = mView.findViewById(R.id.update_interest_button);
+
+        // set the on click listener for the button
+        mUpdateButton.setOnClickListener(this);
     }
 
     // populate spinners
