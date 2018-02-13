@@ -20,14 +20,12 @@ public class CustomEventAdapter extends BaseAdapter {
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<DataSnapshot> mDataEventList;
-    private double mUserLat;
-    private double mUserLon;
+    private ArrayList<Double> mDistanceList;
 
 
-    public CustomEventAdapter(Context context, ArrayList<DataSnapshot> list, double lat, double lon){
-        this.mDataEventList = list;
-        this.mUserLat = lat;
-        this.mUserLon = lon;
+    public CustomEventAdapter(Context context, ArrayList<DataSnapshot> eventList, ArrayList<Double> distanceList){
+        this.mDataEventList = eventList;
+        this.mDistanceList = distanceList;
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
     }
@@ -69,13 +67,13 @@ public class CustomEventAdapter extends BaseAdapter {
         String title = (String) mDataEventList.get(i).child("eventData").child("title").getValue();
         String type = (String) mDataEventList.get(i).child("eventData").child("type").getValue();
         String creator = (String) mDataEventList.get(i).child("eventData").child("creator").child("name").getValue();
-        String distance = "???";
+        String distance = String.valueOf(mDistanceList.get(i));
 
         // set them
         cont.titleTV.setText(title);
         cont.typeTV.setText("Type: " + type);
-        cont.creatorTV.setText("Organizer: " + creator);
-        cont.distanceTV.setText("Distance: " + distance);
+        cont.creatorTV.setText("By: " + creator);
+        cont.distanceTV.setText("Distance: " + distance + "m");
 
         return convertView;
     }
