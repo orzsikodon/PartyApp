@@ -3,7 +3,9 @@ package com.example.android.partyappfox;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -84,6 +86,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (id == R.id.action_logout) {
             Toast.makeText(this, "Signing out", Toast.LENGTH_SHORT).show();
             mAuth.signOut();
+
+            // clear the shared prefs
+            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.shared_pref_key), Context.MODE_PRIVATE);
+            sharedPref.edit().clear().commit();
+
             Intent logOut = new Intent(this, SignInActivity.class);
             startActivity(logOut);
             // kill the current activity
