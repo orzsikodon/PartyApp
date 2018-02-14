@@ -137,6 +137,11 @@ public class EventsFragment extends Fragment {
     private void loadQueriedEvents(){
         // check if there are location coordinates
         if (mCurrentLon == 666 || mCurrentLon == 666 || mCurrentName.length() == 0){
+
+            if (mDialog != null){
+                mDialog.dismiss();
+            }
+
             Toast.makeText(mContext, "Please update your interests first!", Toast.LENGTH_LONG).show();
             navigateToInterestFragment();
         }

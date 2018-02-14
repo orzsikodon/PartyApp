@@ -179,6 +179,8 @@ public class CreateEventFragment extends Fragment implements View.OnClickListene
     private void queryNearbyUsers(){
         // check if there are location coordinates
         if (mCurrentLon == 666 || mCurrentLon == 666 || mCurrentName.length() == 0){
+
+
             Toast.makeText(mContext, "Please update your interests first!", Toast.LENGTH_LONG).show();
             navigateToInterestFragment();
         } else {
